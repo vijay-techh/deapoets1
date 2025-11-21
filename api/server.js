@@ -10,18 +10,24 @@ app.use(cors());
 app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production"
+        ? { rejectUnauthorized: false }
+        : false
 });
 
+const SECRET = process.env.JWT_SECRET || "deadpoets_secret";
+const router = express.Router();
+
 // ✅ SIGNUP
-app.post("/signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
     const hash = await bcrypt.hash(password, 10);
 
-    const result = await pool.query(
-      "INSERT INTO users(name, email, password) VALUES ($1,$2,$3) RETURNING id",
+    await pool.query(
+      "INSERT INTO users(name, email, password) VALUES ($1,$2,$3)",
       [name, email, hash]
     );
 
@@ -35,12 +41,15 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// ✅ LOGIN (for admin + user)
-app.post("/login", async (req, res) => {
+// ✅ LOGIN
+router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userRes = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    const userRes = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
 
     if (userRes.rows.length === 0) {
       return res.json({ success: false, message: "User not found" });
@@ -53,23 +62,27 @@ app.post("/login", async (req, res) => {
       return res.json({ success: false, message: "Incorrect password" });
     }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, SECRET);
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      SECRET,
+      { expiresIn: "7d" }
+    );
 
-  res.json({
-    success: true,
-    token,
-    role: user.role,
-    user_id: user.id   
-  });
-
+    res.json({
+      success: true,
+      token,
+      role: user.role,
+      user_id: user.id
+    });
 
   } catch (err) {
+    console.error(err);
     res.json({ success: false, message: "Internal server error" });
   }
 });
 
 // ✅ Post poem
-app.post("/poems", async (req, res) => {
+router.post("/poems", async (req, res) => {
   const { title, content, user_id } = req.body;
 
   try {
@@ -84,8 +97,8 @@ app.post("/poems", async (req, res) => {
   }
 });
 
-// ✅ Get all poems
-app.get("/poems", async (req, res) => {
+// ✅ Get poems
+router.get("/poems", async (req, res) => {
   const data = await pool.query(`
     SELECT poems.*, users.name 
     FROM poems 
@@ -96,15 +109,14 @@ app.get("/poems", async (req, res) => {
   res.json(data.rows);
 });
 
-// ✅ Get all users (admin)
-app.get("/users", async (req, res) => {
+// ✅ Get users
+router.get("/users", async (req, res) => {
   const data = await pool.query("SELECT id,name,email,role FROM users");
   res.json(data.rows);
 });
-app.get("/", (req, res) => {
-  res.send("Dead Poets API is running...");
-});
-app.post("/report", async (req, res) => {
+
+// ✅ Report poem
+router.post("/report", async (req, res) => {
   const { poem_id, reported_by, reason } = req.body;
 
   try {
@@ -114,12 +126,13 @@ app.post("/report", async (req, res) => {
     );
 
     res.json({ success: true });
-  } catch (err) {
-    console.error("Report error:", err);
+  } catch {
     res.status(500).json({ success: false });
   }
 });
-app.delete("/poems/:id", async (req, res) => {
+
+// ✅ Delete poem
+router.delete("/poems/:id", async (req, res) => {
   const poemId = req.params.id;
 
   try {
@@ -127,15 +140,16 @@ app.delete("/poems/:id", async (req, res) => {
     await pool.query("DELETE FROM reports WHERE poem_id = $1", [poemId]);
 
     res.json({ success: true });
-  } catch (err) {
-    console.error("Delete error:", err);
+  } catch {
     res.status(500).json({ success: false });
   }
 });
-app.get("/reports", async (req, res) => {
+
+// ✅ Reports
+router.get("/reports", async (req, res) => {
   const result = await pool.query(`
     SELECT 
-      reports.id, 
+      reports.id,
       reports.poem_id,
       reports.reason,
       users.name AS reporter,
@@ -149,7 +163,8 @@ app.get("/reports", async (req, res) => {
   res.json(result.rows);
 });
 
-app.post("/like", async (req, res) => {
+// ✅ Likes
+router.post("/like", async (req, res) => {
   const { poem_id, user_id } = req.body;
 
   try {
@@ -157,13 +172,15 @@ app.post("/like", async (req, res) => {
       "INSERT INTO likes(poem_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
       [poem_id, user_id]
     );
+
     res.json({ success: true });
-  } catch (err) {
-    console.error("Like error:", err);
+  } catch {
     res.status(500).json({ success: false });
   }
 });
-app.get("/likes", async (req, res) => {
+
+// ✅ Likes counter
+router.get("/likes", async (req, res) => {
   const result = await pool.query(`
     SELECT poem_id, COUNT(*) AS like_count
     FROM likes
@@ -172,7 +189,9 @@ app.get("/likes", async (req, res) => {
 
   res.json(result.rows);
 });
-app.get("/profile/:id", async (req, res) => {
+
+// ✅ Profile
+router.get("/profile/:id", async (req, res) => {
   const userId = req.params.id;
 
   try {
@@ -198,13 +217,13 @@ app.get("/profile/:id", async (req, res) => {
       poems: poemCount.rows[0].count,
       likes: likeCount.rows[0].count
     });
-
-  } catch (err) {
-    console.error("Profile error:", err);
+  } catch {
     res.status(500).json({ error: "Profile load failed" });
   }
 });
-app.get("/user-poems/:id", async (req, res) => {
+
+// ✅ User poems
+router.get("/user-poems/:id", async (req, res) => {
   const userId = req.params.id;
 
   try {
@@ -214,12 +233,25 @@ app.get("/user-poems/:id", async (req, res) => {
     );
 
     res.json(poems.rows);
-  } catch (err) {
-    console.error("User poems error:", err);
+  } catch {
     res.status(500).json({ error: "Poems load failed" });
   }
 });
 
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+// ✅ Test route
+router.get("/", (req, res) => {
+  res.send("DeadPoet API Running ✅");
 });
+
+// ✅ Prefix with /api
+app.use("/api", router);
+
+// ✅ Run locally ONLY
+if (process.env.NODE_ENV !== "production") {
+  app.listen(5000, () => {
+    console.log("Local API → http://localhost:5000");
+  });
+}
+
+// ✅ Required for Vercel
+module.exports = app;

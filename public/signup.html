@@ -90,85 +90,13 @@
       color: #3b82f6;
       text-decoration: none;
     }
+
     /* Mobile Styles */
-@media (max-width: 768px) {
-
-  body {
-    padding: 8px;
-  }
-
-  /* Layout Fix */
-  .container,
-  .main,
-  .content,
-  .feed {
-    width: 100%;
-    padding: 10px;
-  }
-
-  /* Buttons full width */
-  button {
-    width: 100%;
-    margin-top: 8px;
-    padding: 12px;
-    font-size: 15px;
-  }
-
-  input, textarea {
-    width: 100%;
-    font-size: 15px;
-  }
-
-  /* Poem Cards */
-  .poem-card {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 12px;
-  }
-
-  /* Two columns -> Single column */
-  .stats,
-  .cards,
-  .admin-cards {
-    flex-direction: column;
-  }
-
-  /* Profile stats */
-  .stat-card {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  /* Navbar */
-  .navbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar button {
-    margin-top: 5px;
-  }
-
-  /* Admin side menu collapse */
-  .sidebar {
-    width: 100%;
-    position: relative;
-  }
-
-  .admin-layout {
-    flex-direction: column;
-  }
-
-  .sidebar ul {
-    display: flex;
-    overflow-x: auto;
-  }
-
-  .sidebar ul li {
-    margin-right: 15px;
-  }
-}
-
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -187,52 +115,55 @@
   <div id="msg"></div>
 
   <div class="signup-footer">
-    Already a poet? <a href="index.html">Login here</a>
+    Already a poet? <a href="/">Login here</a>
   </div>
 </div>
 
 <script>
+  // ✅ Smart API switch (local + live)
+  const API = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "/api";
 
+  function signup() {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const msg = document.getElementById("msg");
 
-function signup() {
-  const name = document.getElementById("name").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const confirmPassword = document.getElementById("confirmPassword").value;
-  const msg = document.getElementById("msg");
+    msg.innerHTML = "";
 
-  msg.innerHTML = "";
-
-  if (!name || !email || !password || !confirmPassword) {
-    msg.innerHTML = "<p class='error'>All fields are required.</p>";
-    return;
-  }
-
-  if (password !== confirmPassword) {
-    msg.innerHTML = "<p class='error'>Passwords do not match.</p>";
-    return;
-  }
-
-  fetch("http://localhost:5000/signup", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      msg.innerHTML = "<p class='success'>Account created! Redirecting...</p>";
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 1500);
-    } else {
-      msg.innerHTML = `<p class='error'>${data.message}</p>`;
+    if (!name || !email || !password || !confirmPassword) {
+      msg.innerHTML = "<p class='error'>All fields are required.</p>";
+      return;
     }
-  })
-  .catch(() => {
-    msg.innerHTML = "<p class='error'>Server error. Try again later.</p>";
-  });
-}
+
+    if (password !== confirmPassword) {
+      msg.innerHTML = "<p class='error'>Passwords do not match.</p>";
+      return;
+    }
+
+    fetch(`${API}/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        msg.innerHTML = "<p class='success'>Account created! Redirecting...</p>";
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 1500);
+      } else {
+        msg.innerHTML = `<p class='error'>${data.message}</p>`;
+      }
+    })
+    .catch(() => {
+      msg.innerHTML = "<p class='error'>Server error. Try again later.</p>";
+    });
+  }
 </script>
 
 </body>

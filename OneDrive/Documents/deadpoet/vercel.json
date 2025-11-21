@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "backend/server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    {
+      "src": "^/api/(.*)",
+      "dest": "backend/server.js"
+    },
+
+    {
+      "src": "^/$",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "^/home$",
+      "dest": "/frontend/home.html"
+    },
+    {
+      "src": "^/signup$",
+      "dest": "/frontend/signup.html"
+    },
+    {
+      "src": "^/profile$",
+      "dest": "/frontend/profile.html"
+    },
+    {
+      "src": "^/admin$",
+      "dest": "/frontend/admin.html"
+    },
+    {
+      "src": "^/admin-login$",
+      "dest": "/frontend/admin-login.html"
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/frontend/$1"
+    }
+  ]
+}

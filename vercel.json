@@ -1,14 +1,25 @@
 {
   "version": 2,
+
   "builds": [
     {
       "src": "server.js",
       "use": "@vercel/node"
     }
   ],
+
   "routes": [
-    { "src": "^/api/(.*)$", "dest": "/server.js" },
-    { "handle": "filesystem" },
-    { "src": ".*", "dest": "/index.html" }
+    {
+      "src": "^/(login|signup|home|admin|admin-login|profile)\\.html$",
+      "dest": "/$1.html"
+    },
+    {
+      "src": "^/(signup|login|poems|users|reports|like|report|profile.*)$",
+      "dest": "/server.js"
+    },
+    {
+      "src": "^/$",
+      "dest": "/index.html"
+    }
   ]
 }

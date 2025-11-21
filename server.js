@@ -12,13 +12,6 @@ app.use(express.json());
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
 });
-require("dotenv").config();
-console.log("Loaded DB URL:", process.env.DATABASE_URL);
-
-const SECRET = "deadpoetssecret"; // you can change later
-pool.query("SELECT NOW()")
-  .then(res => console.log("DB Connected:", res.rows[0]))
-  .catch(err => console.error("DB Error:", err));
 
 // ✅ SIGNUP
 app.post("/signup", async (req, res) => {

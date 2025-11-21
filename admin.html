@@ -235,10 +235,6 @@
 </div>
 
 <script>
-  // Smart API base URL (auto switches for local & Vercel)
-const API = window.location.hostname === "localhost" 
-  ? "http://localhost:5000"
-  : "/api";
 
 function logout(){
   localStorage.removeItem("token");

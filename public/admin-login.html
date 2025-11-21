@@ -68,123 +68,11 @@
       margin-top: 10px;
       text-align: center;
       color: #f87171;
+      font-size: 14px;
     }
-    /* Mobile Styles */
-@media (max-width: 768px) {
-
-  body {
-    padding: 8px;
-  }
-
-  /* Layout Fix */
-  .container,
-  .main,
-  .content,
-  .feed {
-    width: 100%;
-    padding: 10px;
-  }
-
-  /* Buttons full width */
-  button {
-    width: 100%;
-    margin-top: 8px;
-    padding: 12px;
-    font-size: 15px;
-  }
-
-  input, textarea {
-    width: 100%;
-    font-size: 15px;
-  }
-
-  /* Poem Cards */
-  .poem-card {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 12px;
-  }
-
-  /* Two columns -> Single column */
-  .stats,
-  .cards,
-  .admin-cards {
-    flex-direction: column;
-  }
-
-  /* Profile stats */
-  .stat-card {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  /* Navbar */
-  .navbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar button {
-    margin-top: 5px;
-  }
-
-  /* Admin side menu collapse */
-  .sidebar {
-    width: 100%;
-    position: relative;
-  }
-
-  .admin-layout {
-    flex-direction: column;
-  }
-
-  .sidebar ul {
-    display: flex;
-    overflow-x: auto;
-  }
-
-  .sidebar ul li {
-    margin-right: 15px;
-  }
-}
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-}
-
-.sidebar {
-  width: 220px;
-  background: #0f172a;
-  padding: 10px;
-}
-
-.main-content {
-  flex: 1;
-  padding: 15px;
-}
-
-@media (max-width: 768px) {
-  .admin-layout {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-  }
-}
-
   </style>
 </head>
 <body>
-<div class="admin-layout">
-  <div class="sidebar">
-    <!-- Sidebar content -->
-  </div>
-
-  <div class="main-content" id="content-section">
-    <!-- Dynamic content here -->
-  </div>
-</div>
 
 <div class="admin-box">
   <h2>Admin Login</h2>
@@ -199,44 +87,49 @@
 </div>
 
 <script>
+  // ✅ Smart API switching
+  const API = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "/api";
 
+  async function adminLogin() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const error = document.getElementById("error");
 
-async function adminLogin() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-  const error = document.getElementById("error");
-
-  if (!email || !password) {
-    error.innerText = "Please fill all fields.";
-    return;
-  }
-
-  try {
-    const res = await fetch("http://localhost:5000/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      error.innerText = data.message;
+    if (!email || !password) {
+      error.innerText = "Please fill all fields.";
       return;
     }
 
-    if (data.role !== "admin") {
-      error.innerText = "Access denied. You are not an admin.";
-      return;
+    try {
+      const res = await fetch(`${API}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        error.innerText = data.message;
+        return;
+      }
+
+      if (data.role !== "admin") {
+        error.innerText = "Access denied. You are not an admin.";
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+
+      window.location.href = "/admin";
+
+    } catch (err) {
+      error.innerText = "Server error. Try again.";
     }
-
-    localStorage.setItem("token", data.token);
-    window.location.href = "admin.html";
-
-  } catch (err) {
-    error.innerText = "Server error. Try again.";
   }
-}
 </script>
 
 </body>

@@ -38,98 +38,26 @@
       border-radius: 10px;
       margin-bottom: 15px;
     }
-    /* Mobile Styles */
-@media (max-width: 768px) {
 
-  body {
-    padding: 8px;
-  }
+    /* Mobile fix */
+    @media (max-width: 768px) {
+      body {
+        padding: 8px;
+      }
 
-  /* Layout Fix */
-  .container,
-  .main,
-  .content,
-  .feed {
-    width: 100%;
-    padding: 10px;
-  }
+      .stats {
+        flex-direction: column;
+      }
 
-  /* Buttons full width */
-  button {
-    width: 100%;
-    margin-top: 8px;
-    padding: 12px;
-    font-size: 15px;
-  }
+      .stat-card {
+        text-align: center;
+        width: 100%;
+      }
 
-  input, textarea {
-    width: 100%;
-    font-size: 15px;
-  }
-
-  /* Poem Cards */
-  .poem-card {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 12px;
-  }
-
-  /* Two columns -> Single column */
-  .stats,
-  .cards,
-  .admin-cards {
-    flex-direction: column;
-  }
-
-  /* Profile stats */
-  .stat-card {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  /* Navbar */
-  .navbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar button {
-    margin-top: 5px;
-  }
-
-  /* Admin side menu collapse */
-  .sidebar {
-    width: 100%;
-    position: relative;
-  }
-
-  .admin-layout {
-    flex-direction: column;
-  }
-
-  .sidebar ul {
-    display: flex;
-    overflow-x: auto;
-  }
-
-  .sidebar ul li {
-    margin-right: 15px;
-  }
-}
-@media (max-width: 768px) {
-  .profile-header {
-    text-align: center;
-  }
-
-  .stats {
-    flex-direction: column;
-  }
-
-  .stat-card {
-    text-align: center;
-  }
-}
-
+      .profile-header {
+        text-align: center;
+      }
+    }
   </style>
 </head>
 <body>
@@ -142,45 +70,54 @@
 <div id="poems"></div>
 
 <script>
+  // ✅ Smart API URL (auto switches for localhost & Vercel)
+  const API = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "/api";
 
-const userId = localStorage.getItem("user_id");
+  const userId = localStorage.getItem("user_id");
 
-async function loadProfile() {
-  const res = await fetch(`http://localhost:5000/profile/${userId}`);
-  const data = await res.json();
+  // 🚫 Safety check
+  if (!userId) {
+    window.location.href = "/";
+  }
 
-  document.getElementById("profile").innerHTML = `
-    <div class="profile-header">
-      <h3>${data.user.name}</h3>
-      <p>${data.user.email}</p>
+  async function loadProfile() {
+    const res = await fetch(`${API}/profile/${userId}`);
+    const data = await res.json();
 
-      <div class="stats">
-        <div class="stat-card">Poems: ${data.poems}</div>
-        <div class="stat-card">Total Likes: ${data.likes}</div>
-      </div>
-    </div>
-  `;
-}
+    document.getElementById("profile").innerHTML = `
+      <div class="profile-header">
+        <h3>${data.user.name}</h3>
+        <p>${data.user.email}</p>
 
-async function loadMyPoems() {
-  const res = await fetch(`http://localhost:5000/user-poems/${userId}`);
-  const poems = await res.json();
-
-  const container = document.getElementById("poems");
-  container.innerHTML = "";
-
-  poems.forEach(p => {
-    container.innerHTML += `
-      <div class="poem-card">
-        <h4>${p.title}</h4>
-        <p>${p.content}</p>
+        <div class="stats">
+          <div class="stat-card">Poems: ${data.poems}</div>
+          <div class="stat-card">Total Likes: ${data.likes}</div>
+        </div>
       </div>
     `;
-  });
-}
+  }
 
-loadProfile();
-loadMyPoems();
+  async function loadMyPoems() {
+    const res = await fetch(`${API}/user-poems/${userId}`);
+    const poems = await res.json();
+
+    const container = document.getElementById("poems");
+    container.innerHTML = "";
+
+    poems.forEach(p => {
+      container.innerHTML += `
+        <div class="poem-card">
+          <h4>${p.title}</h4>
+          <p>${p.content}</p>
+        </div>
+      `;
+    });
+  }
+
+  loadProfile();
+  loadMyPoems();
 </script>
 
 </body>

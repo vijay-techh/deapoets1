@@ -52,10 +52,6 @@
       margin-bottom: 25px;
     }
 
-    .write-box h3 {
-      margin-bottom: 10px;
-    }
-
     .write-box input,
     .write-box textarea {
       width: 100%;
@@ -68,11 +64,6 @@
       font-size: 14px;
     }
 
-    .write-box textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
     .write-box button {
       background: #16a34a;
       padding: 10px 15px;
@@ -80,10 +71,6 @@
       border: none;
       color: white;
       cursor: pointer;
-    }
-
-    .write-box button:hover {
-      background: #15803d;
     }
 
     .poem-feed {
@@ -99,108 +86,16 @@
       box-shadow: 0 0 12px rgba(0,0,0,0.4);
     }
 
-    .poem-card h4 {
-      margin: 0;
-      font-size: 18px;
-    }
-
-    .poem-card small {
-      color: #94a3b8;
-    }
-
-    .poem-card p {
+    .poem-actions {
       margin-top: 10px;
-      font-size: 15px;
-      line-height: 1.6;
-      white-space: pre-line;
-    }
-
-    .footer-actions {
-      margin-top: 8px;
       display: flex;
       justify-content: space-between;
-      font-size: 14px;
-      color: #64748b;
     }
-    /* Mobile Styles */
-@media (max-width: 768px) {
 
-  body {
-    padding: 8px;
-  }
-
-  /* Layout Fix */
-  .container,
-  .main,
-  .content,
-  .feed {
-    width: 100%;
-    padding: 10px;
-  }
-
-  /* Buttons full width */
-  button {
-    width: 100%;
-    margin-top: 8px;
-    padding: 12px;
-    font-size: 15px;
-  }
-
-  input, textarea {
-    width: 100%;
-    font-size: 15px;
-  }
-
-  /* Poem Cards */
-  .poem-card {
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 12px;
-  }
-
-  /* Two columns -> Single column */
-  .stats,
-  .cards,
-  .admin-cards {
-    flex-direction: column;
-  }
-
-  /* Profile stats */
-  .stat-card {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  /* Navbar */
-  .navbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .navbar button {
-    margin-top: 5px;
-  }
-
-  /* Admin side menu collapse */
-  .sidebar {
-    width: 100%;
-    position: relative;
-  }
-
-  .admin-layout {
-    flex-direction: column;
-  }
-
-  .sidebar ul {
-    display: flex;
-    overflow-x: auto;
-  }
-
-  .sidebar ul li {
-    margin-right: 15px;
-  }
-}
-
+    @media (max-width: 768px) {
+      nav { flex-direction: column; }
+      nav button { margin-top: 8px; width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -213,7 +108,6 @@
 
 <div class="container">
 
-  <!-- Write Poem Section -->
   <div class="write-box">
     <h3>Write your poem</h3>
     <input type="text" id="title" placeholder="Poem Title">
@@ -221,71 +115,71 @@
     <button onclick="postPoem()">Post</button>
   </div>
 
-  <!-- Feed Section -->
-  <div class="poem-feed" id="feed">
-    <!-- Poems will appear here -->
-  </div>
+  <div class="poem-feed" id="feed"></div>
 
 </div>
 
 <script>
 
+// ✅ Smart API switch
+const API = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "/api";
 
 function logout(){
-  localStorage.removeItem("token");
-  window.location.href = "../login.html";
+  localStorage.clear();
+  window.location.href = "/";
 }
 
+function goProfile() {
+  window.location.href = "/profile";
+}
 
-
+// ✅ Render poem feed
 async function renderFeed() {
   try {
-    const res = await fetch("http://localhost:5000/poems");
+    const res = await fetch(`${API}/poems`);
     const poems = await res.json();
 
     const feed = document.getElementById("feed");
     feed.innerHTML = "";
 
     poems.forEach(poem => {
-      const card = document.createElement("div");
-      card.className = "poem-card";
+      feed.innerHTML += `
+        <div class="poem-card">
+          <h4>${poem.title}</h4>
+          <small>By ${poem.name}</small>
+          <p>${poem.content}</p>
 
-      card.innerHTML = `
-  <h4>${poem.title}</h4>
-  <small>By ${poem.name}</small>
-  <p>${poem.content}</p>
+          <div class="poem-actions">
+            <button onclick="likePoem(${poem.id})">❤️ Like</button>
+            <span id="likes-${poem.id}">0</span> Likes
 
-<div class="poem-actions">
-  <button onclick="likePoem(${poem.id})">❤️ Like</button>
-  <span id="likes-${poem.id}">0</span> Likes
-</div>
-
-  <button onclick="reportPoem(${poem.id})">🚩 Report</button>
-    `;
-
-      feed.appendChild(card);
+            <button onclick="reportPoem(${poem.id})">🚩 Report</button>
+          </div>
+        </div>
+      `;
     });
+
+    loadLikes();
 
   } catch (err) {
     console.error("Error loading poems", err);
   }
 }
 
-
-// Post poem
+// ✅ Post poem
 async function postPoem() {
   const title = document.getElementById("title").value;
   const content = document.getElementById("content").value;
+  const user_id = localStorage.getItem("user_id");
 
   if (!title || !content) {
     alert("Title and poem cannot be empty.");
     return;
   }
 
-  // 👇 TEMP: This should come from logged-in user later
-  const user_id = localStorage.getItem("user_id");
-
-  const response = await fetch("http://localhost:5000/poems", {
+  const response = await fetch(`${API}/poems`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ title, content, user_id })
@@ -302,61 +196,56 @@ async function postPoem() {
   }
 }
 
-// Initial load
-renderFeed();
+// ✅ Report poem
 async function reportPoem(poemId) {
   const reason = prompt("Why are you reporting this poem?");
-  const user_id = localStorage.getItem("user_id");
-
   if (!reason) return;
 
-  const res = await fetch("http://localhost:5000/report", {
+  const user_id = localStorage.getItem("user_id");
+
+  const res = await fetch(`${API}/report`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       poem_id: poemId,
       reported_by: user_id,
-      reason: reason
+      reason
     })
   });
 
   const data = await res.json();
 
-  if (data.success) {
-    alert("Report submitted successfully ✅");
-  } else {
-    alert("Failed to submit report ❌");
-  }
+  if (data.success) alert("Report submitted ✅");
+  else alert("Failed to submit ❌");
 }
+
+// ✅ Like poem
 async function likePoem(poemId) {
   const userId = localStorage.getItem("user_id");
 
-  const res = await fetch("http://localhost:5000/like", {
+  const res = await fetch(`${API}/like`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ poem_id: poemId, user_id: userId })
   });
 
   const data = await res.json();
-
-  if (data.success) {
-    loadLikes();
-  }
+  if (data.success) loadLikes();
 }
+
+// ✅ Load likes
 async function loadLikes() {
-  const res = await fetch("http://localhost:5000/likes");
+  const res = await fetch(`${API}/likes`);
   const likes = await res.json();
 
   likes.forEach(like => {
     const span = document.getElementById(`likes-${like.poem_id}`);
-    if (span) {
-      span.innerText = like.like_count;
-    }
+    if (span) span.innerText = like.like_count;
   });
 }
-function goProfile() {
-  window.location.href = "profile.html";
-}
+
+// Initial Load
+renderFeed();
 
 </script>
 

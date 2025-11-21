@@ -114,15 +114,11 @@
     <div id="error" class="error"></div>
 
     <div class="login-footer">
-      New here? <a href="/signup">Create an account</a>
+      New here? <a href="signup.html">Create an account</a>
     </div>
   </div>
 
 <script>
-  // ✅ Auto API switch (local + production)
-  const API = window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "/api";
 
   function login() {
     const email = document.getElementById("email").value;

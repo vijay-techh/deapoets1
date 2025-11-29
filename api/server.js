@@ -7,19 +7,28 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(cors());
+app.use(express.static("public"));
 app.use(express.json());
+
+const SECRET = process.env.JWT_SECRET || "supersecret123";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === "production"
-        ? { rejectUnauthorized: false }
-        : false
+  ssl: { rejectUnauthorized: false }
 });
 
-const SECRET = process.env.JWT_SECRET || "deadpoets_secret";
 const router = express.Router();
 
-// ✅ SIGNUP
+// ------------------------
+// ROOT CHECK
+// ------------------------
+app.get("/", (req, res) => {
+  res.send("Dead Poets Society Server is running 🔥");
+});
+
+// ------------------------
+// SIGNUP
+// ------------------------
 router.post("/signup", async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -36,12 +45,15 @@ router.post("/signup", async (req, res) => {
     if (err.code === "23505") {
       res.json({ success: false, message: "Email already exists" });
     } else {
+      console.log(err);
       res.json({ success: false, message: "Server error" });
     }
   }
 });
 
-// ✅ LOGIN
+// ------------------------
+// LOGIN (FIXED ❗❗)
+// ------------------------
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -81,7 +93,9 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// ✅ Post poem
+// ------------------------
+// POST POEM
+// ------------------------
 router.post("/poems", async (req, res) => {
   const { title, content, user_id } = req.body;
 
@@ -92,12 +106,15 @@ router.post("/poems", async (req, res) => {
     );
 
     res.json({ success: true });
-  } catch {
+  } catch (e) {
+    console.log(e);
     res.json({ success: false });
   }
 });
 
-// ✅ Get poems
+// ------------------------
+// GET POEMS
+// ------------------------
 router.get("/poems", async (req, res) => {
   const data = await pool.query(`
     SELECT poems.*, users.name 
@@ -109,13 +126,17 @@ router.get("/poems", async (req, res) => {
   res.json(data.rows);
 });
 
-// ✅ Get users
+// ------------------------
+// GET USERS
+// ------------------------
 router.get("/users", async (req, res) => {
   const data = await pool.query("SELECT id,name,email,role FROM users");
   res.json(data.rows);
 });
 
-// ✅ Report poem
+// ------------------------
+// REPORT POEM
+// ------------------------
 router.post("/report", async (req, res) => {
   const { poem_id, reported_by, reason } = req.body;
 
@@ -131,7 +152,9 @@ router.post("/report", async (req, res) => {
   }
 });
 
-// ✅ Delete poem
+// ------------------------
+// DELETE POEM
+// ------------------------
 router.delete("/poems/:id", async (req, res) => {
   const poemId = req.params.id;
 
@@ -145,7 +168,9 @@ router.delete("/poems/:id", async (req, res) => {
   }
 });
 
-// ✅ Reports
+// ------------------------
+// GET REPORTS
+// ------------------------
 router.get("/reports", async (req, res) => {
   const result = await pool.query(`
     SELECT 
@@ -163,7 +188,9 @@ router.get("/reports", async (req, res) => {
   res.json(result.rows);
 });
 
-// ✅ Likes
+// ------------------------
+// LIKE
+// ------------------------
 router.post("/like", async (req, res) => {
   const { poem_id, user_id } = req.body;
 
@@ -179,7 +206,9 @@ router.post("/like", async (req, res) => {
   }
 });
 
-// ✅ Likes counter
+// ------------------------
+// LIKE COUNTS
+// ------------------------
 router.get("/likes", async (req, res) => {
   const result = await pool.query(`
     SELECT poem_id, COUNT(*) AS like_count
@@ -190,7 +219,9 @@ router.get("/likes", async (req, res) => {
   res.json(result.rows);
 });
 
-// ✅ Profile
+// ------------------------
+// PROFILE
+// ------------------------
 router.get("/profile/:id", async (req, res) => {
   const userId = req.params.id;
 
@@ -222,7 +253,9 @@ router.get("/profile/:id", async (req, res) => {
   }
 });
 
-// ✅ User poems
+// ------------------------
+// USER POEMS
+// ------------------------
 router.get("/user-poems/:id", async (req, res) => {
   const userId = req.params.id;
 
@@ -238,20 +271,29 @@ router.get("/user-poems/:id", async (req, res) => {
   }
 });
 
-// ✅ Test route
-router.get("/", (req, res) => {
-  res.send("DeadPoet API Running ✅");
-});
-
-// ✅ Prefix with /api
+// ------------------------
+// MOUNT ALL API ROUTES
+// ------------------------
 app.use("/api", router);
 
-// ✅ Run locally ONLY
+// ------------------------
+// LOCAL SERVER
+// ------------------------
 if (process.env.NODE_ENV !== "production") {
   app.listen(5000, () => {
     console.log("Local API → http://localhost:5000");
   });
 }
 
-// ✅ Required for Vercel
+console.log("DATABASE URL loaded:", process.env.DATABASE_URL ? "✅ YES" : "❌ NO");
+
+(async () => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    console.log("✅ Neon working:", result.rows[0]);
+  } catch (err) {
+    console.error("❌ Neon error:", err.message);
+  }
+})();
+
 module.exports = app;

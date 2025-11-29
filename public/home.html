@@ -6,97 +6,197 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    body {
-      margin: 0;
-      background: #020617;
-      color: #f9fafb;
-      font-family: system-ui, sans-serif;
-    }
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Cormorant+Garamond:wght@300;400;500&display=swap');
 
-    nav {
-      background: #0f172a;
-      padding: 15px 25px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+:root {
+  --black: #0a0a0a;
+  --dark: #111;
+  --white: #f5f5f5;
+  --gray: #ccc;
+  --border: #222;
+  --gold: #d4c295;
+}
 
-    nav h2 {
-      margin: 0;
-      font-family: Georgia, serif;
-    }
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Cormorant Garamond', serif;
+}
 
-    nav button {
-      background: #1d4ed8;
-      border: none;
-      padding: 8px 16px;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+nav {
+  background: var(--dark);
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
 
-    nav button:hover {
-      background: #2563eb;
-    }
+nav h2 {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  letter-spacing: 1px;
+}
 
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-    }
+nav button {
+  background: var(--white);
+  color: var(--black);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: 'Playfair Display', serif;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
-    .write-box {
-      background: #0f172a;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 25px;
-    }
+nav button:hover {
+  background: var(--gold);
+}
 
-    .write-box input,
-    .write-box textarea {
-      width: 100%;
-      padding: 10px;
-      background: #020617;
-      border: 1px solid #334155;
-      border-radius: 6px;
-      color: white;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 20px;
+}
 
-    .write-box button {
-      background: #16a34a;
-      padding: 10px 15px;
-      border-radius: 6px;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
+/* Write Box */
+.write-box {
+  background: var(--dark);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border: 1px solid var(--border);
+}
 
-    .poem-feed {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
+.write-box h3 {
+  margin-top: 0;
+  font-family: 'Playfair Display', serif;
+}
 
-    .poem-card {
-      background: #0f172a;
-      padding: 15px;
-      border-radius: 12px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.4);
-    }
+.write-box input,
+.write-box textarea {
+  width: 100%;
+  padding: 12px;
+  background: #0c0c0c;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--white);
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-family: 'Cormorant Garamond', serif;
+}
 
-    .poem-actions {
-      margin-top: 10px;
-      display: flex;
-      justify-content: space-between;
-    }
+.write-box button {
+  background: var(--white);
+  color: var(--black);
+  padding: 10px 15px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-family: 'Playfair Display', serif;
+  cursor: pointer;
+  transition: 0.2s;
+}
 
-    @media (max-width: 768px) {
-      nav { flex-direction: column; }
-      nav button { margin-top: 8px; width: 100%; }
-    }
-  </style>
+.write-box button:hover {
+  background: var(--gold);
+}
+
+/* Poem Feed */
+.poem-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.poem-card {
+  background: var(--dark);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+.poem-card h4 {
+  margin-top: 0;
+  font-family: 'Playfair Display', serif;
+}
+
+.poem-card small {
+  color: var(--gray);
+  font-size: 14px;
+}
+
+.poem-card p {
+  margin-top: 10px;
+  color: var(--white);
+  font-size: 17px;
+}
+
+.poem-actions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.poem-actions button {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Playfair Display', serif;
+  cursor: pointer;
+}
+
+.poem-actions button:hover {
+  background: var(--gold);
+  color: var(--black);
+}
+
+@media (max-width: 768px) {
+  nav { flex-direction: column; gap: 10px; }
+  nav button { width: 100%; }
+}
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #111;
+  border-top: 1px solid #222;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-family: 'Playfair Display', serif;
+  z-index: 1000;
+}
+
+.bottom-nav div {
+  text-align: center;
+  color: #f5f5f5;
+  font-size: 20px;
+  cursor: pointer;
+  width: 25%;
+  padding-top: 5px;
+}
+
+.bottom-nav span {
+  display: block;
+  font-size: 12px;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+.bottom-nav div:hover {
+  color: #d4c295; /* gold accent */
+}
+
+</style>
+
 </head>
 <body>
 
@@ -248,6 +348,11 @@ async function loadLikes() {
 renderFeed();
 
 </script>
+<div class="bottom-nav">
+  <div onclick="window.location.href='home.html'">🏠<span>Home</span></div>
+  <div onclick="window.location.href='profile.html'">👤<span>Profile</span></div>
+  <div onclick="window.location.href='/'">🚪<span>Logout</span></div>
+</div>
 
 </body>
 </html>

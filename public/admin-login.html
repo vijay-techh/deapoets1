@@ -5,72 +5,126 @@
   <title>Dead Poets — Admin Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
-    body {
-      margin: 0;
-      background: #020617;
-      color: white;
-      font-family: system-ui, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Cormorant+Garamond:wght@300;400;500&display=swap');
 
-    .admin-box {
-      background: #0f172a;
-      padding: 40px;
-      border-radius: 14px;
-      width: 350px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.6);
-    }
+:root {
+  --black: #0a0a0a;
+  --dark: #111;
+  --white: #f5f5f5;
+  --gray: #bbb;
+  --border: #222;
+  --gold: #d4c295;
+  --red: #a83a3a;
+  --red-dark: #7d2a2a;
+}
 
-    h2 {
-      text-align: center;
-      font-family: Georgia, serif;
-      margin-bottom: 5px;
-      letter-spacing: 1px;
-    }
+body {
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Cormorant Garamond', serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-    p {
-      text-align: center;
-      font-size: 13px;
-      color: #94a3b8;
-      margin-bottom: 25px;
-    }
+.admin-box {
+  background: var(--dark);
+  padding: 40px;
+  border-radius: 12px;
+  width: 350px;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 40px rgba(0,0,0,0.8);
+}
 
-    input {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      border: 1px solid #334155;
-      background: #020617;
-      color: white;
-    }
+h2 {
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 10px;
+}
 
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #dc2626;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
+p {
+  text-align: center;
+  font-size: 15px;
+  color: var(--gray);
+  margin-bottom: 25px;
+  font-family: 'Cormorant Garamond', serif;
+}
 
-    button:hover {
-      background: #b91c1c;
-    }
+input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #0c0c0c;
+  color: var(--white);
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+}
 
-    .error {
-      margin-top: 10px;
-      text-align: center;
-      color: #f87171;
-      font-size: 14px;
-    }
-  </style>
+button {
+  width: 100%;
+  padding: 12px;
+  background: var(--red);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  font-family: 'Playfair Display', serif;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: var(--red-dark);
+}
+
+.error {
+  margin-top: 10px;
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 15px;
+}
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #111;
+  border-top: 1px solid #222;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-family: 'Playfair Display', serif;
+  z-index: 1000;
+}
+
+.bottom-nav div {
+  text-align: center;
+  color: #f5f5f5;
+  font-size: 20px;
+  cursor: pointer;
+  width: 25%;
+  padding-top: 5px;
+}
+
+.bottom-nav span {
+  display: block;
+  font-size: 12px;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+.bottom-nav div:hover {
+  color: #d4c295; /* gold accent */
+}
+
+</style>
+
 </head>
 <body>
 
@@ -88,9 +142,7 @@
 
 <script>
   // ✅ Smart API switching
-  const API = window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "/api";
+  const API = "/api";
 
   async function adminLogin() {
     const email = document.getElementById("email").value;
@@ -131,6 +183,11 @@
     }
   }
 </script>
+<div class="bottom-nav">
+  <div onclick="window.location.href='home.html'">🏠<span>Home</span></div>
+  <div onclick="window.location.href='profile.html'">👤<span>Profile</span></div>
+  <div onclick="window.location.href='/'">🚪<span>Logout</span></div>
+</div>
 
 </body>
 </html>

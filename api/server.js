@@ -295,5 +295,35 @@ console.log("DATABASE URL loaded:", process.env.DATABASE_URL ? "✅ YES" : "❌ 
     console.error("❌ Neon error:", err.message);
   }
 })();
+// DELETE USER
+router.delete("/users/:id", async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Delete user likes and reports first for integrity
+    await pool.query("DELETE FROM likes WHERE user_id = $1", [userId]);
+    await pool.query("DELETE FROM reports WHERE reported_by = $1", [userId]);
+    await pool.query("DELETE FROM poems WHERE user_id = $1", [userId]);
+    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
+// DELETE REPORT
+router.delete("/reports/:id", async (req, res) => {
+  const reportId = req.params.id;
+
+  try {
+    await pool.query("DELETE FROM reports WHERE id = $1", [reportId]);
+
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ success: false });
+  }
+});
 
 module.exports = app;

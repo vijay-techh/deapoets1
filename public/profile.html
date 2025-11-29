@@ -22,6 +22,7 @@ body {
   background: var(--black);
   color: var(--white);
   padding: 20px;
+  padding-bottom: 100px;
 }
 
 h2, h3, h4 {
@@ -35,17 +36,6 @@ h2, h3, h4 {
   border-radius: 10px;
   margin-bottom: 20px;
   border: 1px solid var(--border);
-}
-
-.profile-header h3 {
-  margin: 0;
-  font-size: 26px;
-}
-
-.profile-header p {
-  margin: 6px 0;
-  color: var(--gray);
-  font-size: 16px;
 }
 
 .stats {
@@ -73,7 +63,6 @@ h2, h3, h4 {
 
 .poem-card h4 {
   margin-top: 0;
-  font-family: 'Playfair Display', serif;
 }
 
 .poem-card p {
@@ -81,12 +70,6 @@ h2, h3, h4 {
   font-size: 16px;
 }
 
-@media (max-width: 768px) {
-  body { padding: 8px; }
-  .stats { flex-direction: column; }
-  .stat-card { width: 100%; text-align: center; }
-  .profile-header { text-align: center; }
-}
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -108,20 +91,65 @@ h2, h3, h4 {
   font-size: 20px;
   cursor: pointer;
   width: 25%;
-  padding-top: 5px;
 }
 
 .bottom-nav span {
   display: block;
   font-size: 12px;
   color: #ccc;
-  margin-top: 2px;
 }
 
 .bottom-nav div:hover {
-  color: #d4c295; /* gold accent */
+  color: var(--gold);
 }
 
+/* Edit Profile Popup */
+#editPopup {
+  display:none; 
+  position:fixed; 
+  top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.7); 
+  justify-content:center; 
+  align-items:center;
+  z-index:2000;
+}
+
+#editPopup .box {
+  background:#111; 
+  padding:25px; 
+  border-radius:10px; 
+  width:300px;
+  border:1px solid var(--border);
+}
+
+input {
+  width:100%; 
+  padding:10px; 
+  background:#000;
+  border:1px solid #333; 
+  color:white; 
+  border-radius:6px;
+  margin-top:10px;
+}
+
+/* Floating Button */
+.floating-btn {
+  position:fixed;
+  bottom:80px;
+  right:20px;
+  background:var(--gold);
+  color:black;
+  padding:12px 20px;
+  border-radius:50px;
+  cursor:pointer;
+  font-weight:600;
+  box-shadow:0 0 10px #000;
+}
+
+@media (max-width: 768px) {
+  body { padding: 10px; padding-bottom: 120px; }
+  .stats { flex-direction: column; }
+}
 </style>
 
 </head>
@@ -131,32 +159,83 @@ h2, h3, h4 {
 
 <div id="profile"></div>
 
-<h3>My Poems</h3>
+<h3>Insights</h3>
+<div class="stats">
+  <div class="stat-card" id="avgWords">Avg Words: 0</div>
+  <div class="stat-card" id="longestPoem">Longest: 0 words</div>
+  <div class="stat-card" id="mostLiked">Most Liked: 0</div>
+</div>
+
+<h3 style="margin-top:25px;">My Poems</h3>
+
+<select id="sortPoems" 
+  style="background:#111; color:white; padding:8px; border:1px solid #333;
+         border-radius:6px; margin-bottom:15px;"
+  onchange="loadMyPoems()">
+  <option value="recent">Recent</option>
+  <option value="liked">Most Liked</option>
+  <option value="short">Shortest</option>
+</select>
+
 <div id="poems"></div>
 
+<!-- Floating New Poem Button -->
+<div class="floating-btn" onclick="window.location.href='create.html'">
+  + New Poem
+</div>
+
+<!-- Edit Profile Popup -->
+<div id="editPopup">
+  <div class="box">
+    <h3>Edit Profile</h3>
+    <input id="editName" placeholder="Name">
+    <button onclick="saveProfile()" style="
+      margin-top:15px; width:100%; padding:10px; border-radius:8px;
+      background:var(--gold); color:black; cursor:pointer;">
+      Save
+    </button>
+    <button onclick="closeEditPopup()" style="
+      margin-top:10px; width:100%; padding:10px; border-radius:8px;
+      background:#333; color:white; cursor:pointer;">
+      Cancel
+    </button>
+  </div>
+</div>
+
 <script>
-  // ✅ Smart API URL (auto switches for localhost & Vercel)
   const API = window.location.hostname === "localhost"
     ? "http://localhost:5000"
     : "/api";
 
   const userId = localStorage.getItem("user_id");
 
-  // 🚫 Safety check
-  if (!userId) {
-    window.location.href = "/";
-  }
+  if (!userId) window.location.href = "/";
 
+  // Load Profile
   async function loadProfile() {
     const res = await fetch(`${API}/profile/${userId}`);
     const data = await res.json();
 
     document.getElementById("profile").innerHTML = `
       <div class="profile-header">
-        <h3>${data.user.name}</h3>
-        <p>${data.user.email}</p>
 
-        <div class="stats">
+        <div style="display:flex; align-items:center; gap:20px;">
+          <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${data.user.name}"
+               style="width:70px; height:70px; border-radius:50%; border:2px solid var(--gold);">
+
+          <div>
+            <h3>${data.user.name}</h3>
+            <p>${data.user.email}</p>
+
+            <button onclick="openEditPopup()" style="
+              background:none; color:var(--gold); border:1px solid var(--gold);
+              padding:5px 12px; border-radius:6px; cursor:pointer; margin-top:5px;">
+              Edit Profile
+            </button>
+          </div>
+        </div>
+
+        <div class="stats" style="margin-top:20px;">
           <div class="stat-card">Poems: ${data.poems}</div>
           <div class="stat-card">Total Likes: ${data.likes}</div>
         </div>
@@ -164,26 +243,89 @@ h2, h3, h4 {
     `;
   }
 
+  // Load My Poems + Analytics
   async function loadMyPoems() {
-    const res = await fetch(`${API}/user-poems/${userId}`);
+    const sort = document.getElementById("sortPoems").value;
+    const res = await fetch(`${API}/user-poems/${userId}?sort=${sort}`);
     const poems = await res.json();
 
     const container = document.getElementById("poems");
     container.innerHTML = "";
 
+    let totalWords = 0;
+    let longest = 0;
+    let maxLikes = 0;
+
     poems.forEach(p => {
+      const wc = p.content.split(" ").length;
+      totalWords += wc;
+      longest = Math.max(longest, wc);
+      maxLikes = Math.max(maxLikes, p.likes);
+
       container.innerHTML += `
         <div class="poem-card">
           <h4>${p.title}</h4>
           <p>${p.content}</p>
+
+          <div style="margin-top:10px; display:flex; gap:10px;">
+            <button onclick="editPoem(${p.id})" style="
+              padding:5px 10px; background:none; border:1px solid var(--gold);
+              color:var(--gold); border-radius:6px; cursor:pointer;">
+              Edit
+            </button>
+
+            <button onclick="deletePoem(${p.id})" style="
+              padding:5px 10px; background:#300; border:1px solid #500;
+              color:#f88; border-radius:6px; cursor:pointer;">
+              Delete
+            </button>
+          </div>
         </div>
       `;
     });
+
+    document.getElementById("avgWords").innerText = `Avg Words: ${Math.round(totalWords / poems.length)}`;
+    document.getElementById("longestPoem").innerText = `Longest: ${longest} words`;
+    document.getElementById("mostLiked").innerText = `Most Liked: ${maxLikes}`;
+  }
+
+  // Poem Actions
+  async function deletePoem(id) {
+    if (!confirm("Delete this poem?")) return;
+    await fetch(`${API}/poem/${id}`, { method: "DELETE" });
+    loadMyPoems();
+  }
+
+  function editPoem(id) {
+    window.location.href = `edit-poem.html?id=${id}`;
+  }
+
+  // Edit profile popup
+  function openEditPopup() {
+    document.getElementById("editPopup").style.display = "flex";
+  }
+  function closeEditPopup() {
+    document.getElementById("editPopup").style.display = "none";
+  }
+
+  async function saveProfile() {
+    const newName = document.getElementById("editName").value;
+    if (!newName) return alert("Enter a valid name.");
+
+    await fetch(`${API}/edit-profile/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newName })
+    });
+
+    closeEditPopup();
+    loadProfile();
   }
 
   loadProfile();
   loadMyPoems();
 </script>
+
 <div class="bottom-nav">
   <div onclick="window.location.href='home.html'">🏠<span>Home</span></div>
   <div onclick="window.location.href='profile.html'">👤<span>Profile</span></div>

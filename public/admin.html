@@ -40,7 +40,6 @@ nav h2 {
   margin: 0;
   font-family: 'Playfair Display', serif;
   font-size: 26px;
-  color: var(--white);
 }
 
 nav button {
@@ -115,8 +114,8 @@ nav button:hover {
 }
 
 .card h3 {
-  font-family: 'Playfair Display', serif;
   margin: 0;
+  font-family: 'Playfair Display', serif;
 }
 
 /* TABLES */
@@ -132,7 +131,6 @@ table th {
   border-bottom: 1px solid var(--border);
   font-family: 'Playfair Display', serif;
   font-size: 16px;
-  color: var(--white);
 }
 
 table td {
@@ -167,6 +165,7 @@ button:hover {
   .sidebar { display: flex; overflow-x: auto; }
   .sidebar div { margin-right: 10px; }
 }
+
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -188,21 +187,18 @@ button:hover {
   font-size: 20px;
   cursor: pointer;
   width: 25%;
-  padding-top: 5px;
 }
 
 .bottom-nav span {
   display: block;
   font-size: 12px;
   color: #ccc;
-  margin-top: 2px;
 }
 
 .bottom-nav div:hover {
-  color: #d4c295; /* gold accent */
+  color: #d4c295;
 }
-
-</style>
+  </style>
 
 </head>
 <body>
@@ -228,7 +224,7 @@ button:hover {
 
 <script>
 const API = window.location.hostname === "localhost"
-  ? "http://localhost:5000"
+  ? "http://localhost:5000/api"
   : "/api";
 
 function logout(){
@@ -236,6 +232,9 @@ function logout(){
   window.location.href = "/";
 }
 
+/* --------------------
+   DASHBOARD
+--------------------- */
 async function showDashboard() {
   const users = await fetch(`${API}/users`).then(res => res.json());
   const poems = await fetch(`${API}/poems`).then(res => res.json());
@@ -251,13 +250,16 @@ async function showDashboard() {
   `;
 }
 
+/* --------------------
+   USERS
+--------------------- */
 async function showUsers(){
   const users = await fetch(`${API}/users`).then(res => res.json());
 
   let html = `
     <h2>Registered Users</h2>
     <table>
-      <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th></tr>
+      <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Action</th></tr>
   `;
 
   users.forEach(user => {
@@ -267,6 +269,7 @@ async function showUsers(){
         <td>${user.name}</td>
         <td>${user.email}</td>
         <td>${user.role}</td>
+        <td><button onclick="deleteUser(${user.id})">❌ Delete</button></td>
       </tr>
     `;
   });
@@ -275,13 +278,16 @@ async function showUsers(){
   document.getElementById("content-section").innerHTML = html;
 }
 
+/* --------------------
+   POEMS
+--------------------- */
 async function showPoems(){
   const poems = await fetch(`${API}/poems`).then(res => res.json());
 
   let html = `
     <h2>All Poems</h2>
     <table>
-      <tr><th>ID</th><th>Title</th><th>Author</th></tr>
+      <tr><th>ID</th><th>Title</th><th>Author</th><th>Action</th></tr>
   `;
 
   poems.forEach(poem => {
@@ -290,6 +296,7 @@ async function showPoems(){
         <td>${poem.id}</td>
         <td>${poem.title}</td>
         <td>${poem.name}</td>
+        <td><button onclick="deletePoem(${poem.id})">🗑 Delete</button></td>
       </tr>
     `;
   });
@@ -298,13 +305,16 @@ async function showPoems(){
   document.getElementById("content-section").innerHTML = html;
 }
 
+/* --------------------
+   REPORTS
+--------------------- */
 async function showReports(){
   const reports = await fetch(`${API}/reports`).then(res => res.json());
 
   let html = `
     <h2>Reports</h2>
     <table>
-      <tr><th>ID</th><th>Poem</th><th>Reporter</th><th>Reason</th><th>Action</th></tr>
+      <tr><th>ID</th><th>Poem</th><th>Reporter</th><th>Reason</th><th>Actions</th></tr>
   `;
 
   if (reports.length === 0) {
@@ -317,7 +327,10 @@ async function showReports(){
           <td>${report.poem_title}</td>
           <td>${report.reporter}</td>
           <td>${report.reason}</td>
-          <td><button onclick="deletePoem(${report.poem_id})">Delete</button></td>
+          <td>
+            <button onclick="deletePoem(${report.poem_id})">🗑 Delete Poem</button>
+            <button onclick="deleteReport(${report.id})" style="margin-left:5px;">❌ Remove Report</button>
+          </td>
         </tr>
       `;
     });
@@ -327,6 +340,9 @@ async function showReports(){
   document.getElementById("content-section").innerHTML = html;
 }
 
+/* --------------------
+   ACTIONS
+--------------------- */
 async function deletePoem(poemId) {
   if (!confirm("Delete this poem?")) return;
 
@@ -334,15 +350,44 @@ async function deletePoem(poemId) {
   const data = await res.json();
 
   if (data.success) {
-    alert("Poem deleted ✅");
+    alert("Poem deleted ✓");
     showReports();
   } else {
     alert("Delete failed ❌");
   }
 }
 
+async function deleteUser(id) {
+  if (!confirm("Delete this user? All poems will also be removed.")) return;
+
+  const res = await fetch(`${API}/users/${id}`, { method: "DELETE" });
+  const data = await res.json();
+
+  if (data.success) {
+    alert("User deleted ✓");
+    showUsers();
+  } else {
+    alert("Failed to delete user ❌");
+  }
+}
+
+async function deleteReport(id) {
+  if (!confirm("Remove this report?")) return;
+
+  const res = await fetch(`${API}/reports/${id}`, { method: "DELETE" });
+  const data = await res.json();
+
+  if (data.success) {
+    alert("Report removed ✓");
+    showReports();
+  } else {
+    alert("Failed to remove report ❌");
+  }
+}
+
 showDashboard();
 </script>
+
 <div class="bottom-nav">
   <div onclick="window.location.href='home.html'">🏠<span>Home</span></div>
   <div onclick="window.location.href='profile.html'">👤<span>Profile</span></div>

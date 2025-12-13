@@ -69,7 +69,7 @@ h2, h3, h4 {
   color: var(--gray);
   font-size: 16px;
 }
-.poem-card p {
+.poem-card p .poem-text {
   white-space: pre-wrap;
   line-height: 1.8;
 }
@@ -261,31 +261,38 @@ input {
     let maxLikes = 0;
 
     poems.forEach(p => {
-      const wc = p.content.split(" ").length;
-      totalWords += wc;
-      longest = Math.max(longest, wc);
-      maxLikes = Math.max(maxLikes, p.likes);
+  const wc = p.content.trim().split(/\s+/).length;
+  totalWords += wc;
+  longest = Math.max(longest, wc);
+  maxLikes = Math.max(maxLikes, p.likes);
 
-      container.innerHTML += `
-        <div class="poem-card">
-          <h4>${p.title}</h4>
-          <p>${p.content}</p>
+  const poemDiv = document.createElement("div");
+  poemDiv.className = "poem-card";
 
-          <div style="margin-top:10px; display:flex; gap:10px;">
-            <button onclick="editPoem(${p.id})" style="
-              padding:5px 10px; background:none; border:1px solid var(--gold);
-              color:var(--gold); border-radius:6px; cursor:pointer;">
-              Edit
-            </button>
+  poemDiv.innerHTML = `
+    <h4>${p.title}</h4>
+    <p class="poem-text"></p>
 
-            <button onclick="deletePoem(${p.id})" style="
-              padding:5px 10px; background:#300; border:1px solid #500;
-              color:#f88; border-radius:6px; cursor:pointer;">
-              Delete
-            </button>
-          </div>
-        </div>
-      `;
+    <div style="margin-top:10px; display:flex; gap:10px;">
+      <button onclick="editPoem(${p.id})"
+        style="padding:5px 10px; background:none; border:1px solid var(--gold);
+        color:var(--gold); border-radius:6px; cursor:pointer;">
+        Edit
+      </button>
+
+      <button onclick="deletePoem(${p.id})"
+        style="padding:5px 10px; background:#300; border:1px solid #500;
+        color:#f88; border-radius:6px; cursor:pointer;">
+        Delete
+      </button>
+    </div>
+  `;
+
+  // 🔑 THIS LINE PRESERVES ENTER / NEWLINES
+  poemDiv.querySelector(".poem-text").textContent = p.content;
+
+  container.appendChild(poemDiv);
+
     });
 
     document.getElementById("avgWords").innerText = `Avg Words: ${Math.round(totalWords / poems.length)}`;

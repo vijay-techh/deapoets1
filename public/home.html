@@ -155,6 +155,11 @@ nav button:hover {
   background: var(--gold);
   color: var(--black);
 }
+.poem-text {
+  white-space: pre-wrap;
+  line-height: 1.8;
+  margin-top: 10px;
+}
 
 @media (max-width: 768px) {
   nav { flex-direction: column; gap: 10px; }
@@ -245,21 +250,35 @@ async function renderFeed() {
     feed.innerHTML = "";
 
     poems.forEach(poem => {
-      feed.innerHTML += `
-        <div class="poem-card">
-          <h4>${poem.title}</h4>
-          <small>By ${poem.name}</small>
-          <p>${poem.content}</p>
+  const card = document.createElement("div");
+  card.className = "poem-card";
 
-          <div class="poem-actions">
-            <button onclick="likePoem(${poem.id})">❤️ Like</button>
-            <span id="likes-${poem.id}">0</span> Likes
+  const title = document.createElement("h4");
+  title.textContent = poem.title;
 
-            <button onclick="reportPoem(${poem.id})">🚩 Report</button>
-          </div>
-        </div>
-      `;
-    });
+  const author = document.createElement("small");
+  author.textContent = `By ${poem.name}`;
+
+  const content = document.createElement("p");
+  content.className = "poem-text";
+  content.textContent = poem.content; // 🔑 THIS LINE PRESERVES ENTER
+
+  const actions = document.createElement("div");
+  actions.className = "poem-actions";
+  actions.innerHTML = `
+    <button onclick="likePoem(${poem.id})">❤️ Like</button>
+    <span id="likes-${poem.id}">0</span> Likes
+    <button onclick="reportPoem(${poem.id})">🚩 Report</button>
+  `;
+
+  card.appendChild(title);
+  card.appendChild(author);
+  card.appendChild(content);
+  card.appendChild(actions);
+
+  feed.appendChild(card);
+});
+
 
     loadLikes();
 

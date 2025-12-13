@@ -268,7 +268,8 @@ input {
 
   const poemDiv = document.createElement("div");
   poemDiv.className = "poem-card";
-
+  poemDiv.querySelector(".poem-text").textContent = p.content;
+    
   poemDiv.innerHTML = `
     <h4>${p.title}</h4>
     <p class="poem-text"></p>
